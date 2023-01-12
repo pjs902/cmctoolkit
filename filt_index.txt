@@ -1,5 +1,6 @@
-U filterfunctions/Generic_Johnson.U.dat 3.67807e-9
-B filterfunctions/Generic_Johnson.B.dat 6.29336e-9
-V filterfunctions/Generic_Johnson.V.dat 3.57453e-9
-R filterfunctions/Generic_Cousins.R.dat 2.24563e-9
-I filterfunctions/Generic_Cousins.I.dat 1.20234e-9
+U /home/peter/research/cmctoolkit/filterfunctions/Generic_Johnson.U.dat 3.67807e-9
+B /home/peter/research/cmctoolkit/filterfunctions/Generic_Johnson.B.dat 6.29336e-9
+V /home/peter/research/cmctoolkit/filterfunctions/Generic_Johnson.V.dat 3.57453e-9
+R /home/peter/research/cmctoolkit/filterfunctions/Generic_Cousins.R.dat 2.24563e-9
+I /home/peter/research/cmctoolkit/filterfunctions/Generic_Cousins.I.dat 1.20234e-9
+GaiaG /home/peter/research/CMC-obs/filters/gaia/GAIA_GAIA3.G.dat 2.50386e-9 # http://svo2.cab.inta-csic.es/svo/theory/fps3/index.php?id=GAIA/GAIA3.G&&mode=browse&gname=GAIA&gname2=GAIA3#filter
