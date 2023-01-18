@@ -1478,7 +1478,7 @@ class Snapshot:
                 }
             )
 
-            self.filtertable = self.filtertable.append(filterrow, ignore_index=True)
+            self.filtertable = pd.concat([self.filtertable, filterrow],axis=1, ignore_index=True)
 
     def make_2d_projection(self, seed=0):
         """
