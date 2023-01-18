@@ -2067,7 +2067,7 @@ class Snapshot:
         mf = count / dm
         e_mf = np.sqrt(count) / dm
 
-        return mf, e_mf
+        return mf, e_mf, bin_edges
 
     def fit_mass_function_slope(
         self,
