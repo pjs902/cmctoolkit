@@ -4,31 +4,9 @@ import h5py
 import scipy.optimize
 import scipy.interpolate
 import gzip
+from tqdm import tqdm, trange
 
 
-__all__ = [
-    "startype_all",
-    "startype_star",
-    "startype_ms",
-    "startype_giant",
-    "startype_wd",
-    "startype_other",
-    "startype_remnant",
-    "startype_bh",
-    "coldict_h5",
-    "coldict_datgz",
-    "make_unitdict",
-    "load_filter",
-    "load_filtertable",
-    "smooth_filter",
-    "add_mags",
-    "find_t_ms",
-    "SSE_MS_get_L_and_R",
-    "SSE_MS_get_flux",
-    "find_MS_TO",
-    "Snapshot",
-    "G",
-]
 
 ################################################################################
 # DEFINE CGS CONSTANTS
@@ -963,7 +941,7 @@ class Snapshot:
 
             # Make a list of lists each of which contains the contents of each object
             text = text[2:-1]
-            rows = np.array([np.array(row.split())[: len(colnames)] for row in text])
+            rows = np.array([np.array(row.split())[: len(colnames)] for row in tqdm(text)])
 
             rows[np.where(rows == "na")] = "nan"
             rows = rows.astype(float)
@@ -1563,6 +1541,8 @@ class Snapshot:
         va_kms_arr = self.convert_units(va_arr, "code", "nb_km/s")
 
         # Add new columns to table
+        self.data.reset_index(drop=True, inplace=True)
+        self.data = self.data.copy()
         self.data["d"] = d_arr
         self.data["x"], self.data["y"], self.data["z"] = x_arr, y_arr, z_arr
         self.data["vx"], self.data["vy"], self.data["vz"] = vx_arr, vy_arr, vz_arr
