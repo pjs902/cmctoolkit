@@ -7,6 +7,9 @@ import gzip
 from tqdm import tqdm, trange
 
 
+# trying out these optimizations
+pd.set_option("mode.copy_on_write", True)
+
 
 ################################################################################
 # DEFINE CGS CONSTANTS
