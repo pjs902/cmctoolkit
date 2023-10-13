@@ -4,6 +4,7 @@ import h5py
 import scipy.optimize
 import scipy.interpolate
 import gzip
+import re
 from tqdm import tqdm, trange
 
 
@@ -927,39 +928,26 @@ class Snapshot:
 
         # Can either load old gzip snapshots or new hdf5 snapshots
         if ".dat.gz" in fname:
-            # For gzip, read in snapshot as long list where each line is a str
-            f = gzip.open(fname, "rb")
-            text = str(f.read()).split("\\n")
-            f.close()
 
-            # Extract column names
-            colrow = text[1].replace("#", " ").replace("  ", " ").split()
-            colnames = [
-                colrow[ii][len(str(ii + 1)) + 1 :].replace(":", "")
-                for ii in range(len(colrow))
-            ]
+            # read in first two lines
+            with gzip.open(fname, 'rb') as of:
+                t_row, col_row = of.readline().decode(), of.readline().decode()
 
-            # Extract snapshot time
-            t_snapshot = text[0].split("#")[1].split("=")[1].split()[0]
+            # extract snapshot time
+            t_snapshot = t_row.split("=")[1].split()[0]
 
-            # Make a list of lists each of which contains the contents of each object
-            text = text[2:-1]
-            rows = np.array([np.array(row.split())[: len(colnames)] for row in tqdm(text)])
+            # extract (correct) column names
+            colnames = re.split(r'\s*[#$]?\d+[:.]', col_row.strip())[1:]
 
-            rows[np.where(rows == "na")] = "nan"
-            rows = rows.astype(float)
+            # get dataframe
+            self.data = pd.read_table(fname, sep=r'\s+', skiprows=2,
+                                      names=colnames, na_values='na')
 
-            # Build a dictionary and cast to pandas DataFrame object
-            table = {}
-            for ii in range(len(colnames)):
-                table[colnames[ii]] = rows[:, ii]
-
-            self.data = pd.DataFrame(table)
             self.coldict = coldict_datgz
 
         elif ".h5" in fname:
             # Take the last snapshot from the file if not specified
-            if snapshot_name == None:
+            if snapshot_name is None:
                 snapshot_name = list(h5py.File(fname, "r").keys())[-1]
 
             # New version of CMC prints out pandas DataFrame formatted hdf5 files
