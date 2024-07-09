@@ -1,0 +1,7 @@
+U Generic_Johnson.U.dat 3.67807e-9
+B Generic_Johnson.B.dat 6.29336e-9
+V Generic_Johnson.V.dat 3.57453e-9
+R Generic_Cousins.R.dat 2.24563e-9
+I Generic_Cousins.I.dat 1.20234e-9
+GaiaG GAIA_GAIA3.G_abridged.dat 2.50386e-9 #http://svo2.cab.inta-csic.es/svo/theory/fps3/index.php?id=GAIA/GAIA3.G&&mode=browse&gname=GAIA&gname2=GAIA3#filter
+WFC3F814W HST_WFC3_UVIS1.F814W_abridged.dat 1.13481e-9 #http://svo2.cab.inta-csic.es/svo/theory/fps3/index.php?id=HST/WFC3_UVIS1.F814W&&mode=browse&gname=HST&gname2=WFC3_UVIS1#filter

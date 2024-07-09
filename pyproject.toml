@@ -7,3 +7,10 @@ name = "cmctoolkit"
 version = "0.1.0"
 requires-python = ">=3.8"
 readme = "README.md"
+dependencies = ["numpy", "scipy","pandas", "tqdm", "h5py"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+cmctoolkit = ["filterfunctions/*.dat", "filterfunctions/*.txt"]
