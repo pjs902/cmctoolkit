@@ -5,7 +5,7 @@ import scipy.optimize
 import scipy.interpolate
 import gzip
 import re
-import importlib_resources
+from importlib import resources
 
 
 # trying out these optimizations
@@ -219,7 +219,7 @@ def load_default_filters():
     """
 
     # get the directory containing the package data
-    package_data = importlib_resources.files("cmctoolkit").joinpath("filterfunctions")
+    package_data = resources.files("cmctoolkit").joinpath("filterfunctions")
 
     # get each filter
     filt_index = str(package_data.joinpath("filt_index.txt"))
