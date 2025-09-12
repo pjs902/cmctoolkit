@@ -1093,11 +1093,15 @@ class Snapshot:
         if self.dist is not None:
             distance_modulus = 5 * np.log10(self.dist / 0.01)
 
+        # Create a dictionary to hold new columns
+        new_columns = {}
+
         # Calculate magnitudes
         for ii in range(len(filtnames)):
-            self.data["absMag_" + filtnames[ii]] = np.nan * np.ones(len(self.data))
-            self.data["bin_absMag0_" + filtnames[ii]] = np.nan * np.ones(len(self.data))
-            self.data["bin_absMag1_" + filtnames[ii]] = np.nan * np.ones(len(self.data))
+            filtname = filtnames[ii]
+            new_columns["absMag_" + filtname] = np.nan * np.ones(len(self.data))
+            new_columns["bin_absMag0_" + filtname] = np.nan * np.ones(len(self.data))
+            new_columns["bin_absMag1_" + filtname] = np.nan * np.ones(len(self.data))
 
             # Get filter function information
             wavelength_cm = np.array(self.convert_units(filtfuncs[ii]["wavelength[ANGSTROM]"], "angstrom", "cm"))
@@ -1139,14 +1143,12 @@ class Snapshot:
             spectral_lum = luminosity_cgs / (4 * np.pi * self.convert_units(10, "pc", "cm") ** 2 * passband_wl)
 
             # Calculate magnitudes (exclude black holes)
-            self.data.loc[
-                (self.data[self.coldict["binflag"]] != 1) & (self.data[self.coldict["startype"]] != 14),
-                "absMag_" + filtnames[ii],
+            new_columns["absMag_" + filtname][
+                (self.data[self.coldict["binflag"]] != 1) & (self.data[self.coldict["startype"]] != 14)
             ] = -2.5 * np.log10(spectral_lum / zp_spectralflux[ii])
 
             if self.dist is not None:
-                self.data["obsMag_" + filtnames[ii]] = self.data["absMag_" + filtnames[ii]]
-                self.data["obsMag_" + filtnames[ii]] += distance_modulus
+                new_columns["obsMag_" + filtname] = new_columns["absMag_" + filtname] + distance_modulus
 
             # Repeat this process for the first star in each binary
             Teff0_K = self.data.loc[
@@ -1179,14 +1181,12 @@ class Snapshot:
             spectral_lum0 = luminosity0_cgs / (4 * np.pi * self.convert_units(10, "pc", "cm") ** 2 * passband_wl)
 
             # Calculate magnitudes
-            self.data.loc[
-                (self.data[self.coldict["binflag"]] == 1) & (self.data[self.coldict["bin_startype0"]] != 14),
-                "bin_absMag0_" + filtnames[ii],
+            new_columns["bin_absMag0_" + filtname][
+                (self.data[self.coldict["binflag"]] == 1) & (self.data[self.coldict["bin_startype0"]] != 14)
             ] = -2.5 * np.log10(spectral_lum0 / zp_spectralflux[ii])
 
             if self.dist is not None:
-                self.data["bin_obsMag0_" + filtnames[ii]] = self.data["bin_absMag0_" + filtnames[ii]]
-                self.data["bin_obsMag0_" + filtnames[ii]] += distance_modulus
+                new_columns["bin_obsMag0_" + filtname] = new_columns["bin_absMag0_" + filtname] + distance_modulus
 
             # Repeat this process for the second star in each binary
             Teff1_K = self.data.loc[
@@ -1219,31 +1219,27 @@ class Snapshot:
             spectral_lum1 = luminosity1_cgs / (4 * np.pi * self.convert_units(10, "pc", "cm") ** 2 * passband_wl)
 
             # Calculate magnitudes
-            self.data.loc[
-                (self.data[self.coldict["binflag"]] == 1) & (self.data[self.coldict["bin_startype1"]] != 14),
-                "bin_absMag1_" + filtnames[ii],
+            new_columns["bin_absMag1_" + filtname][
+                (self.data[self.coldict["binflag"]] == 1) & (self.data[self.coldict["bin_startype1"]] != 14)
             ] = -2.5 * np.log10(spectral_lum1 / zp_spectralflux[ii])
 
             if self.dist is not None:
-                self.data["bin_obsMag1_" + filtnames[ii]] = self.data["bin_absMag1_" + filtnames[ii]]
-                self.data["bin_obsMag1_" + filtnames[ii]] += distance_modulus
+                new_columns["bin_obsMag1_" + filtname] = new_columns["bin_absMag1_" + filtname] + distance_modulus
 
             # Add total magnitude columns together
-            self.data["tot_absMag_" + filtnames[ii]] = np.nan * np.ones(len(self.data))
+            new_columns["tot_absMag_" + filtname] = np.nan * np.ones(len(self.data))
 
             good_single = (self.data[self.coldict["binflag"]] != 1) & (self.data[self.coldict["startype"]] != 14)
-            self.data.loc[good_single, "tot_absMag_" + filtnames[ii]] = self.data.loc[
-                good_single, "absMag_" + filtnames[ii]
-            ]
+            new_columns["tot_absMag_" + filtname][good_single] = new_columns["absMag_" + filtname][good_single]
 
             good_binary = (
                 (self.data[self.coldict["binflag"]] == 1)
                 & (self.data[self.coldict["bin_startype0"]] != 14)
                 & (self.data[self.coldict["bin_startype1"]] != 14)
             )
-            self.data.loc[good_binary, "tot_absMag_" + filtnames[ii]] = add_mags(
-                self.data.loc[good_binary, "bin_absMag0_" + filtnames[ii]],
-                self.data.loc[good_binary, "bin_absMag1_" + filtnames[ii]],
+            new_columns["tot_absMag_" + filtname][good_binary] = add_mags(
+                new_columns["bin_absMag0_" + filtname][good_binary],
+                new_columns["bin_absMag1_" + filtname][good_binary],
             )
 
             good0_bad1 = (
@@ -1251,22 +1247,17 @@ class Snapshot:
                 & (self.data[self.coldict["bin_startype0"]] != 14)
                 & (self.data[self.coldict["bin_startype1"]] == 14)
             )
-            self.data.loc[good0_bad1, "tot_absMag_" + filtnames[ii]] = self.data.loc[
-                good0_bad1, "bin_absMag0_" + filtnames[ii]
-            ]
+            new_columns["tot_absMag_" + filtname][good0_bad1] = new_columns["bin_absMag0_" + filtname][good0_bad1]
 
             good1_bad0 = (
                 (self.data[self.coldict["binflag"]] == 1)
                 & (self.data[self.coldict["bin_startype0"]] == 14)
                 & (self.data[self.coldict["bin_startype1"]] != 14)
             )
-            self.data.loc[good1_bad0, "tot_absMag_" + filtnames[ii]] = self.data.loc[
-                good1_bad0, "bin_absMag1_" + filtnames[ii]
-            ]
+            new_columns["tot_absMag_" + filtname][good1_bad0] = new_columns["bin_absMag1_" + filtname][good1_bad0]
 
             if self.dist is not None:
-                self.data["tot_obsMag_" + filtnames[ii]] = self.data["tot_absMag_" + filtnames[ii]]
-                self.data["tot_obsMag_" + filtnames[ii]] += distance_modulus
+                new_columns["tot_obsMag_" + filtname] = new_columns["tot_absMag_" + filtname] + distance_modulus
 
             # Add filter to filtertable
             filterrow = pd.DataFrame(
@@ -1278,6 +1269,9 @@ class Snapshot:
             )
 
             self.filtertable = pd.concat([self.filtertable, filterrow], axis=0, ignore_index=True)
+
+        # Concatenate new columns to the DataFrame
+        self.data = pd.concat([self.data, pd.DataFrame(new_columns)], axis=1)
 
     def make_2d_projection(self, seed=0):
         """
